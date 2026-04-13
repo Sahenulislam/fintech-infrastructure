@@ -1,0 +1,23 @@
+# Maven
+target/
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+
+# Docker volumes
+mysql_data/
+
+# Node (if frontend later)
+node_modules/
+
+
+
