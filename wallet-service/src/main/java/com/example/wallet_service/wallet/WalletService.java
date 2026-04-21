@@ -15,8 +15,11 @@ public class WalletService {
     @Transactional
     public void processTransaction(TransactionCreatedEvent event) {
 
-        Wallet sender = repo.findById(event.getSenderId()).orElseThrow();
-        Wallet receiver = repo.findById(event.getReceiverId()).orElseThrow();
+        Wallet sender = repo.findByUserId(event.getSenderId())
+                .orElseThrow(() -> new RuntimeException("Sender wallet not found"));
+
+        Wallet receiver = repo.findByUserId(event.getReceiverId())
+                .orElseThrow(() -> new RuntimeException("Receiver wallet not found"));
 
         if (sender.getBalance().compareTo(event.getAmount()) < 0) {
             throw new RuntimeException("Insufficient balance");
@@ -27,5 +30,15 @@ public class WalletService {
 
         repo.save(sender);
         repo.save(receiver);
+    }
+
+    @Transactional
+    public Wallet create(Wallet wallet) {
+        return repo.save(wallet);
+    }
+
+    @Transactional
+    public Wallet update(Wallet wallet) {
+        return repo.save(wallet);
     }
 }
