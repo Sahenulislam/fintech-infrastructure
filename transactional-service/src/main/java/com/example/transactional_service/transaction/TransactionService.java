@@ -17,14 +17,23 @@ public class TransactionService {
         Transaction saved = transactionRepository.save(tx);
 
         TransactionCreatedEvent event = new TransactionCreatedEvent(
-                saved.getId().toString(),
+                saved.getId(),
                 saved.getSenderId(),
                 saved.getReceiverId(),
-                saved.getAmount()
+                saved.getAmount(),
+                saved.getStatus()
         );
 
         transactionProducer.sendTransactionEvent(event);
 
         return saved;
+    }
+
+    public void processTransaction(TransactionCreatedEvent event) {
+        Transaction tx = transactionRepository.findById(event.getTransactionId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        tx.setStatus(event.getStatus());
+        transactionRepository.save(tx);
     }
 }

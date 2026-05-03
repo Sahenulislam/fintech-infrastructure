@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionCreatedEvent {
-    private String transactionId;
+    private Long transactionId;
     private Long senderId;
     private Long receiverId;
     private Double amount;
+    private String status;
 }
