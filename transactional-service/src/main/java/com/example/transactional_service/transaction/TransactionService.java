@@ -24,7 +24,7 @@ public class TransactionService {
                 saved.getStatus()
         );
 
-        transactionProducer.sendTransactionEvent(event);
+        transactionProducer.sendTransactionEvent("transaction-created",event);
 
         return saved;
     }

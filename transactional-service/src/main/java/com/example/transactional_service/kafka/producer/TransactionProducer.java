@@ -11,7 +11,7 @@ public class TransactionProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendTransactionEvent(TransactionCreatedEvent event) {
-        kafkaTemplate.send("transaction-created", event);
+    public void sendTransactionEvent(String event, TransactionCreatedEvent message) {
+        kafkaTemplate.send(event, message);
     }
 }
