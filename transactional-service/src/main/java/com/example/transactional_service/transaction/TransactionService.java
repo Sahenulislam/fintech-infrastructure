@@ -1,19 +1,27 @@
 package com.example.transactional_service.transaction;
 
 import com.example.transactional_service.kafka.producer.TransactionProducer;
+import com.example.transactional_service.outbox.Outbox;
+import com.example.transactional_service.outbox.OutboxService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final OutboxService outboxService;
+    private final ObjectMapper objectMapper;
 
     private final TransactionProducer transactionProducer;
 
+    @Transactional
     public Transaction createTransaction(Transaction tx) {
         tx.setStatus("PENDING");
+
         Transaction saved = transactionRepository.save(tx);
 
         TransactionCreatedEvent event = new TransactionCreatedEvent(
@@ -24,9 +32,22 @@ public class TransactionService {
                 saved.getStatus()
         );
 
-        transactionProducer.sendTransactionEvent("transaction-created",event);
+        try {
 
-        return saved;
+            String payload = objectMapper.writeValueAsString(event);
+            Outbox outbox = new Outbox();
+
+            outbox.setEventType("transaction-created");
+            outbox.setStatus("DRAFT");
+            outbox.setPayload(payload);
+
+            outboxService.save(outbox);
+
+            return saved;
+
+        }catch (Exception e) {
+            throw  new RuntimeException(e);
+        }
     }
 
     public void processTransaction(TransactionCreatedEvent event) {
