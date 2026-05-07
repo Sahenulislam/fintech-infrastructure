@@ -5,6 +5,8 @@ import com.example.transactional_service.kafka.producer.TransactionProducer;
 import com.example.transactional_service.transaction.TransactionCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +21,7 @@ public class OutboxPublisher {
 
     @Scheduled(fixedDelay = 5000)
     public void publish() {
-        List<Outbox> outboxList = outboxRepository.findAll();
+        List<Outbox> outboxList = outboxRepository.findAllByStatus(PageRequest.of(0, 100), "DRAFT");
 
         for (Outbox outbox : outboxList) {
             try {
