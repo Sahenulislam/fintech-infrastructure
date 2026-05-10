@@ -1,16 +1,12 @@
 package com.example.wallet_service.wallet;
 
-import com.example.wallet_service.kafka.Producer.WalletProducer;
-import com.example.wallet_service.outbox.Outbox;
-import com.example.wallet_service.outbox.OutboxRepository;
+import com.example.wallet_service.outbox.OutboxService;
 import com.example.wallet_service.transaction.Transaction;
 import com.example.wallet_service.transaction.TransactionRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -18,10 +14,8 @@ import java.util.List;
 public class WalletService {
 
     private final WalletRepository walletRepository;
-    private final WalletProducer walletProducer;
     private final TransactionRepository transactionRepository;
-    private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
+    private final OutboxService outboxService;
 
     @Transactional
     public void processTransaction(TransactionCreatedEvent event) {
@@ -50,16 +44,7 @@ public class WalletService {
 
                 event.setStatus("FAILED");
 
-                String payload = objectMapper.writeValueAsString(event);
-
-                Outbox outbox = Outbox.builder()
-                        .eventType("transaction-completed")
-                        .status("DRAFT")
-                        .createdAt(Instant.now())
-                        .payload(payload)
-                        .build();
-
-                outboxRepository.save(outbox);
+                outboxService.save("transaction-completed", event);
 
                 return;
             }
@@ -76,15 +61,16 @@ public class WalletService {
             transactionRepository.save(transaction);
 
             event.setStatus("SUCCESS");
-            walletProducer.sendTransactionEvent("transaction-completed", event);
+
+            outboxService.save("transaction-completed", event);
 
         } catch (Exception e) {
             transaction.setStatus("FAILED");
             transactionRepository.save(transaction);
 
             event.setStatus("FAILED");
-            walletProducer.sendTransactionEvent("transaction-completed", event);
 
+            outboxService.save("transaction-completed", event);
             throw e;
         }
     }

@@ -1,6 +1,5 @@
 package com.example.wallet_service.outbox;
 
-
 import com.example.wallet_service.wallet.TransactionCreatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -34,6 +33,8 @@ public class OutboxService {
                     .createdAt(Instant.now())
                     .payload(payload)
                     .build();
+
+            outboxRepository.save(outbox);
         }catch (Exception e){
             throw new  RuntimeException(e);
         }
