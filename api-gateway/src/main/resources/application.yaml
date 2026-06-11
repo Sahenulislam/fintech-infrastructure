@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: wallet-service
+          uri: lb://wallet-service
+          predicates:
+            - Path=/wallet/**
+          filters:
+            - StripPrefix=1
+
+        - id: transactional-service
+          uri: lb://transactional-service
+          predicates:
+            - Path=/transaction/**
+          filters:
+            - StripPrefix=1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8012/eureka/
+
+management:
+  endpoint:
+    gateway:
+      enabled: true
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
