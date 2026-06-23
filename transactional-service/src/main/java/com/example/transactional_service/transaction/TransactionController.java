@@ -13,7 +13,7 @@ public class TransactionController {
 
     private final TransactionService service;
 
-    @PostMapping
+    @PostMapping("/create")
     public Transaction sendMoney(@RequestBody Transaction tx) {
         return service.createTransaction(tx);
     }
