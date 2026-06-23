@@ -11,28 +11,21 @@ spring:
         - id: wallet-service
           uri: lb://wallet-service
           predicates:
-            - Path=/wallet/**
+            - Path=/api/wallet/**
           filters:
-            - StripPrefix=1
+            - StripPrefix=0
 
         - id: transactional-service
           uri: lb://transactional-service
           predicates:
-            - Path=/transaction/**
+            - Path=/api/transactions/**
           filters:
-            - StripPrefix=1
+            - StripPrefix=0
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8012/eureka/
 
-management:
-  endpoint:
-    gateway:
-      enabled: true
-
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+  instance:
+    prefer-ip-address: true
